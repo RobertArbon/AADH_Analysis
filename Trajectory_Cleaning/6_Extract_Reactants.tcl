@@ -67,6 +67,7 @@ set tarid [molinfo $tar get id]
 
 set files [glob -directory $inpdir *.dcd]
 
+
 foreach filename $files {
 
     set tar [mol new $psf  waitfor all]
