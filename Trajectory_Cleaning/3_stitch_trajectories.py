@@ -32,15 +32,15 @@ if __name__ == '__main__':
     os.chdir(input_dir)
 
     start_r1, end_r1 = 1, 10    # The first round of trajectory sampling
-    start_r2, end_r2 = 1, 1     # second round (new random seeds)
-    start_r3, end_r3 = 1, 5     # indices to combine
+    start_r2, end_r2 = 2, 10     # second round (new random seeds)
+    start_r3, end_r3 = 1, 1    # indices to combine
     with open(os.path.join(output_dir,'stich.log'), 'w') as fh:
         for i in range(start_r1, end_r1+1):
-            for j in range(start_r2, start_r2+1):
+            for j in range(start_r2, end_r2+1):
                 inp_string = []
                 for k in range(start_r3, end_r3+1):  # These will concatenated
                     inp_string.append('2agy-310k-1atm-prod{0}.{1}-{2}.nowat.dcd'.format(i, j, k))
-
+                print('2agy-310k-1atm-prod{0}.{1}-nowat-comb.dcd'.format(i,j))
                 out_string = os.path.join(output_dir, '2agy-310k-1atm-prod{0}.{1}-nowat-comb.dcd'.format(i,j))
                 output = run(['catdcd', '-o', out_string] + inp_string, stdout=PIPE, universal_newlines=True)
                 fh.write(output.stdout)
