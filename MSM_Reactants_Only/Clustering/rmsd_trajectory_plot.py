@@ -29,7 +29,8 @@ ns_to_ang = 10
 rtrajs = {}
 for k, v in ftrajs.items():
     v = np.squeeze(v)
-
+    diff = nframes-v.shape[0]
+    v = np.append(v, np.zeros(diff))
     rtrajs[k] = v
 
 # Create DataFrame
