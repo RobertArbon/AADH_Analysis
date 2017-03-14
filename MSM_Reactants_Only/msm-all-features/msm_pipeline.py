@@ -12,6 +12,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, ShuffleSplit
 from time import time
 import pandas as pd
+import scipy
+
 
 # Load all features
 features = ['angles', 'dihedrals', 'bonds', 'contacts']
@@ -34,42 +36,41 @@ for traj in all_trajs:
     ftraj.append(np.concatenate(tmp, axis=1))
 
 # Make Pipeline
-cv_iter = ShuffleSplit(n_splits=5, test_size=0.1)
+cv_iter = ShuffleSplit(n_splits=5, test_size=0.5)
 estimators = [('tica', tICA()), ('cluster', MiniBatchKMeans(random_state=0)), ('msm', MarkovStateModel())]
 param_grid = {'cluster__n_clusters': list(np.linspace(200, 500, num=2).astype(int)),
               'tica__n_components': list(np.linspace(10, 30, num=2).astype(int)),
               'tica__lag_time': list(np.linspace(200, 500, num=2).astype(int))}
 
+params = {'cluster__n_clusters': scipy.stats.randint(low=100,high=1000),
+              'tica__n_components':  scipy.stats.randint(low=2,high=50),
+              'tica__lag_time':  scipy.stats.randint(low=10,high=500)}
+
+
 pipe = Pipeline(estimators)
 pipe.set_params(msm__lag_time=500)
+pipe.set_params(msm__n_timescales=10)
 
 if __name__ == "__main__":
 
-    grid_search = GridSearchCV(pipe, param_grid, n_jobs=-1, verbose=1, cv=cv_iter)
+    cvSearch = RandomizedSearchCV(pipe, params, n_jobs=4, verbose=1, cv=cv_iter, n_iter=2)
 
     print("Performing grid search...")
     print("pipeline:", [name for name, _ in pipe.steps])
     print("parameters:")
-    print(param_grid)
+    print(params)
     t0 = time()
-    grid_search.fit(ftraj)
+    cvSearch.fit(ftraj)
     print("done in %0.3fs" % (time() - t0))
     print()
 
-    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best score: %0.3f" % cvSearch.best_score_)
     print("Best parameters set:")
-    best_parameters = grid_search.best_estimator_.get_params()
-    for param_name in sorted(param_grid.keys()):
+    best_parameters = cvSearch.best_estimator_.get_params()
+    for param_name in sorted(params.keys()):
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
-    df = pd.DataFrame(grid_search.cv_results_)
-    save_generic(df, 'results/grid_search.pickl')
-    # # Print
-    # timescales = msm.timescales_.T
-    # fig, ax = plt.subplots()
-    # ax.hlines(timescales, xmin=0, xmax=1, label='Lag {}'.format(lag))
-    # plt.legend()
-    # ax.set_xlim(0,1)
-    # ax.set_ylim(0,10000)
-    # plt.savefig('figures/timescales-clusters-{}.png'.format(num_clusters))
+    df = pd.DataFrame(cvSearch.cv_results_)
+    save_generic(df, 'results/random_search.pickl')
+
 
