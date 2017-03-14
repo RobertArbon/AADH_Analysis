@@ -92,7 +92,7 @@ def pyemma_feat(args):
     feat = featurizer(top)
     try:
         adder = getattr(feat, featurizer_name)
-        adder(indexes=indices)
+        adder(indexes=indices, cossin=True)
         feat_traj = np.squeeze(source(traj, features=feat).get_output(), axis=0)
         return i, feat_traj
     except AttributeError:
@@ -242,10 +242,7 @@ def to_dataframe(traj_dict, nframes, dt):
     id_cols = ['PDB', 'Temp', 'Pres', 'Prod_ID', 'Site_ID']
     df = pd.DataFrame.from_records(data=traj_dict)
     df['Time_ps'] = np.arange(nframes) * dt
-    print(df.head())
     df = pd.melt(df, id_vars=['Time_ps'], var_name='Key', value_name='Trajectory')
-    print(df.head())
     df[id_cols] = pd.DataFrame(df['Key'].tolist())
-    print(df.head())
     # del df['Production_ID']
     return df

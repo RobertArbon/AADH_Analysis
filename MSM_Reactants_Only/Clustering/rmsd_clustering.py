@@ -1,4 +1,4 @@
-from msmbuilder.io import load_meta, preload_tops, save_generic, itertrajs
+from msmbuilder.io import load_meta, preload_tops, save_generic, itertrajs, backup
 import mdtraj as md
 from msmbuilder.cluster import LandmarkAgglomerative
 from msmbuilder.featurizer import RMSDFeaturizer
@@ -18,6 +18,7 @@ from utilities import to_dataframe
 meta = load_meta()
 tops = preload_tops(meta)
 nframes = int(np.max(meta['nframes'].unique()[0]))
+ref = md.load('topology.pdb')
 
 def traj_load(irow):
     i, row = irow
@@ -49,10 +50,26 @@ g = sns.FacetGrid(sample, col='Prod_ID',hue='Site_ID', col_wrap=10)
 g.map(plt.scatter, 'Time_ps', 'Trajectory', alpha=0.5)
 g.set(ylim=(-1.5,10))
 g.fig.tight_layout()
-plt.savefig('rmsd_cluster_trajectory.pdf')
+plt.savefig('figures/rmsd_cluster_trajectory.pdf')
 
 # Save dataframe
-save_generic(df, 'rmsd_cluster_trajectory.pickl')
+save_generic(df, 'clusters/rmsd_cluster_trajectory.pickl')
 
 # Sampling
+for i in range(num_clusters):
+    df_smp = df.ix[df['Trajectory']==i, ['Key', 'Time_ps']].sample(100)
+    inds = zip(df_smp['Key'], df_smp['Time_ps'])
 
+    # Use loc because sample_dimension is nice
+    traj = md.join(
+        md.load_frame(meta.loc[traj_i]['traj_fn'], index=frame_i, top=meta.loc[traj_i]['top_fn'])
+        for traj_i, frame_i in inds
+    )
+
+    # Original trajectories include both BT1 and BT2 so need to superpose
+    traj.superpose(reference=ref)
+
+    # Save
+    traj_fn = "clusters/rmsd_cluster-{}.dcd".format(i)
+    backup(traj_fn)
+    traj.save(traj_fn)
