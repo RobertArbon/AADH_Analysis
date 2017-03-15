@@ -1,7 +1,8 @@
 # The pipeline for constructing an MSM
 from msmbuilder.io import load_trajs, save_generic
+from msmbuilder.preprocessing import StandardScaler
 from msmbuilder.decomposition import tICA
-from msmbuilder.cluster import KMeans, MiniBatchKMeans, LandmarkAgglomerative
+from msmbuilder.cluster import MiniBatchKMeans
 from msmbuilder.msm import MarkovStateModel
 import numpy as np
 import matplotlib
@@ -16,7 +17,9 @@ import scipy
 
 
 # Load all features
-features = ['angles', 'dihedrals', 'bonds', 'contacts']
+# features = ['angles', 'dihedrals', 'bonds', 'contacts']
+features = ['dihedrals', 'contacts']
+
 all_trajs = []
 for feature in features:
     meta, ftraj = load_trajs('pruned_trajectories/{}-ftraj'.format(feature))
@@ -37,14 +40,15 @@ for traj in all_trajs:
 
 # Make Pipeline
 cv_iter = ShuffleSplit(n_splits=5, test_size=0.5)
-estimators = [('tica', tICA()), ('cluster', MiniBatchKMeans(random_state=0)), ('msm', MarkovStateModel())]
+estimators = [('scale',StandardScaler()),('tica', tICA()), ('cluster', MiniBatchKMeans(random_state=0)),
+              ('msm', MarkovStateModel())]
 param_grid = {'cluster__n_clusters': list(np.linspace(200, 500, num=2).astype(int)),
               'tica__n_components': list(np.linspace(10, 30, num=2).astype(int)),
               'tica__lag_time': list(np.linspace(200, 500, num=2).astype(int))}
 
-params = {'cluster__n_clusters': scipy.stats.randint(low=100,high=1000),
-              'tica__n_components':  scipy.stats.randint(low=2,high=50),
-              'tica__lag_time':  scipy.stats.randint(low=10,high=500)}
+params = {'cluster__n_clusters': scipy.stats.randint(low=200,high=700),
+              'tica__n_components':  scipy.stats.randint(low=2,high=40),
+              'tica__lag_time':  scipy.stats.randint(low=100,high=800)}
 
 
 pipe = Pipeline(estimators)
@@ -53,7 +57,7 @@ pipe.set_params(msm__n_timescales=10)
 
 if __name__ == "__main__":
 
-    cvSearch = RandomizedSearchCV(pipe, params, n_jobs=4, verbose=1, cv=cv_iter, n_iter=2)
+    cvSearch = RandomizedSearchCV(pipe, params, n_jobs=3, verbose=1, cv=cv_iter, n_iter=100)
 
     print("Performing grid search...")
     print("pipeline:", [name for name, _ in pipe.steps])
@@ -71,6 +75,6 @@ if __name__ == "__main__":
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
     df = pd.DataFrame(cvSearch.cv_results_)
-    save_generic(df, 'results/random_search.pickl')
+    save_generic(df, 'results/20-40-Clusters.pickl')
 
 

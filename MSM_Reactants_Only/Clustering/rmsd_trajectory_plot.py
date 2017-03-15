@@ -11,6 +11,7 @@ import seaborn as sns
 import pandas as pd
 import sys
 
+
 meta = load_meta()
 tops = preload_tops(meta)
 
@@ -30,7 +31,7 @@ rtrajs = {}
 for k, v in ftrajs.items():
     v = np.squeeze(v)
     diff = nframes-v.shape[0]
-    v = np.append(v, np.zeros(diff))
+    v = np.append(v, np.zeros(diff)+np.nan)*ns_to_ang
     rtrajs[k] = v
 
 # Create DataFrame
@@ -47,13 +48,16 @@ df = df.join(df.groupby(id_cols)['RMSD'].rolling(10).mean()
 df.drop(labels=[x+'_r' for x in id_cols], axis=1, inplace=True)
 
 # Plot rolling
-sns.set_context(font_scale=5)
-sample = df.sample(frac=0.1, axis=0)
-sample.sort_values(by=['Prod_ID', 'Site_ID', 'Time_ps'], inplace=True)
-g = sns.FacetGrid(sample, col='Prod_ID',hue='Site_ID', col_wrap=10)
-g.map(plt.plot, 'Time_ps', 'RMSD_r')
-g.fig.tight_layout()
-plt.savefig('rmsd_trajectory.pdf')
+with sns.plotting_context("notebook", font_scale=2):
+    sample = df.sample(frac=0.1, axis=0)
+    sample.sort_values(by=['Prod_ID', 'Site_ID', 'Time_ps'], inplace=True)
+    g = sns.FacetGrid(sample, col='Prod_ID',hue='Site_ID', col_wrap=10)
+    g.map(plt.plot, 'Time_ps', 'RMSD_r')
+    g.set_ylabels("RMSD $\AA$")
+    g.set_xlabels("Time $ps$")
+    g.set_titles("")
+    g.fig.subplots_adjust(wspace=0.05, hspace=0.05)
+    plt.savefig('rmsd_trajectory.png', transparent=True)
 
 # Save dataframe
 save_generic(df, 'rmsd_trajectory.pickl')

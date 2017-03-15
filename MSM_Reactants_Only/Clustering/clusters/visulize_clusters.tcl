@@ -22,6 +22,7 @@ foreach file $files {
     display resetview
     display update on
     display update ui
+    display distance -4
 
     mol modstyle 0 $mol Licorice
     mol modcolor 0 $mol Name
@@ -32,6 +33,7 @@ foreach file $files {
     make_rotation_animated_gif $outfile
 
     mol delete $mol
+
 
 }
 
