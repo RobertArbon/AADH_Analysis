@@ -1,10 +1,6 @@
 import mdtraj as md
 from glob import glob
-import MDAnalysis
-from multiprocessing import Pool
 import numpy as np
-import contextlib
-import StructureAnalysis.charts as charts
 import matplotlib.pyplot as plt
 
 

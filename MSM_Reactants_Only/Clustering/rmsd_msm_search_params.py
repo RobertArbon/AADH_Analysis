@@ -33,11 +33,11 @@ cv_iter = ShuffleSplit(n_splits=5, test_size=0.5)
 estimators = [('cluster', LandmarkAgglomerative(n_clusters=2, n_landmarks=int(totframes/200), linkage='ward', metric='rmsd')),
               ('msm', MarkovStateModel())]
 
-params = {'cluster__n_clusters': [200,400]}
+params = {'cluster__n_clusters': [200]}
 
 pipe = Pipeline(estimators)
-pipe.set_params(msm__lag_time=500)
-pipe.set_params(msm__n_timescales=10)
+pipe.set_params(msm__lag_time=999)
+pipe.set_params(msm__n_timescales=20)
 
 if __name__ == "__main__":
 
@@ -59,4 +59,4 @@ if __name__ == "__main__":
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
     df = pd.DataFrame(cvSearch.cv_results_)
-    save_generic(df, 'results/200-400-Clusters.pickl')
+    save_generic(df, 'results/lag999-ncluster200.pickl')
