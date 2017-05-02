@@ -90,3 +90,11 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# images
+*.ppm
+*.jpg
+
+# Backups and pickle files
+*.pickl
+*bak*

@@ -2,7 +2,8 @@
 # Does grid search for optimum parameters
 #
 from msmbuilder.io import load_trajs, save_trajs, save_generic
-from msmbuilder.decomposition import tICA
+from msmbuilder.decomposition import tICA, sparsetica
+
 from sklearn.model_selection import ShuffleSplit, GridSearchCV
 import pandas as pd
 

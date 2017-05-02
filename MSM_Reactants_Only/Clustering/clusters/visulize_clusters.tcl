@@ -1,13 +1,13 @@
 proc make_rotation_animated_gif { movie_name } {
 	set frame 0
-	set rot 5
+	set rot 60
 	for {set i 0} {$i < 360} {incr i $rot} {
 		set filename snap.[format "%04d" $frame].rgb
 		render snapshot $filename
 		incr frame
 		rotate y by $rot
 	}
-	exec convert -loop 1 -delay 10 snap*rgb $movie_name
+	exec convert -loop 1 -delay 50 snap*rgb $movie_name
 	file delete {*}[glob snap*rgb]
 }
 

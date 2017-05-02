@@ -47,17 +47,18 @@ df = df.join(df.groupby(id_cols)['RMSD'].rolling(10).mean()
              .reset_index(level=[0,1,2,3,4]), rsuffix='_r')
 df.drop(labels=[x+'_r' for x in id_cols], axis=1, inplace=True)
 
+long_trajs = ['{}.1'.format(x) for x in range(1,11)]
 # Plot rolling
 with sns.plotting_context("notebook", font_scale=2):
-    sample = df.sample(frac=0.1, axis=0)
+    sample = df.ix[df['Prod_ID'].isin(long_trajs),:].sample(frac=0.1, axis=0)
     sample.sort_values(by=['Prod_ID', 'Site_ID', 'Time_ps'], inplace=True)
-    g = sns.FacetGrid(sample, col='Prod_ID',hue='Site_ID', col_wrap=10)
+    g = sns.FacetGrid(sample, col='Prod_ID',hue='Site_ID', col_wrap=5)
     g.map(plt.plot, 'Time_ps', 'RMSD_r')
     g.set_ylabels("RMSD $\AA$")
-    g.set_xlabels("Time $ps$")
+    g.set_xlabels("")
     g.set_titles("")
     g.fig.subplots_adjust(wspace=0.05, hspace=0.05)
-    plt.savefig('rmsd_trajectory.png', transparent=True)
+    plt.savefig('rmsd_trajectory_long.png', transparent=True)
 
 # Save dataframe
 save_generic(df, 'rmsd_trajectory.pickl')

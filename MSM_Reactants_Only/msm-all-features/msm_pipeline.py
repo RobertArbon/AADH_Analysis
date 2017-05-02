@@ -40,15 +40,17 @@ for traj in all_trajs:
 
 # Make Pipeline
 cv_iter = ShuffleSplit(n_splits=5, test_size=0.5)
+
 estimators = [('scale',StandardScaler()),('tica', tICA()), ('cluster', MiniBatchKMeans(random_state=0)),
               ('msm', MarkovStateModel())]
+
 param_grid = {'cluster__n_clusters': list(np.linspace(200, 500, num=2).astype(int)),
               'tica__n_components': list(np.linspace(10, 30, num=2).astype(int)),
               'tica__lag_time': list(np.linspace(200, 500, num=2).astype(int))}
 
-params = {'cluster__n_clusters': scipy.stats.randint(low=200,high=700),
+params = {'cluster__n_clusters': scipy.stats.randint(low=200,high=200),
               'tica__n_components':  scipy.stats.randint(low=2,high=40),
-              'tica__lag_time':  scipy.stats.randint(low=100,high=800)}
+              'tica__lag_time':  scipy.stats.randint(low=100,high=999)}
 
 
 pipe = Pipeline(estimators)
@@ -57,7 +59,7 @@ pipe.set_params(msm__n_timescales=10)
 
 if __name__ == "__main__":
 
-    cvSearch = RandomizedSearchCV(pipe, params, n_jobs=3, verbose=1, cv=cv_iter, n_iter=100)
+    cvSearch = GridSearchCV(pipe, params, n_jobs=3, verbose=1, cv=5)
 
     print("Performing grid search...")
     print("pipeline:", [name for name, _ in pipe.steps])
@@ -75,6 +77,6 @@ if __name__ == "__main__":
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
     df = pd.DataFrame(cvSearch.cv_results_)
-    save_generic(df, 'results/20-40-Clusters.pickl')
+    save_generic(df, 'results/random_search.pickl')
 
 

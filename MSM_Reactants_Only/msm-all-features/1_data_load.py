@@ -41,8 +41,6 @@ file_type = 'dcd'
 #
 #  Gather and save the metadata
 #
-
-
 parser = GenericParser(re_pattern,
                        group_names=captured_group_names,
                        group_transforms=captured_group_transforms,
