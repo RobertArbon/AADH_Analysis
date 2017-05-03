@@ -1,11 +1,13 @@
 .idea
 *.tga
 *.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.npy
+
 # C extensions
 *.so
 
@@ -94,7 +96,19 @@ ENV/
 # images
 *.ppm
 *.jpg
+*.gif
+*.pdf
+*.mov
 
 # Backups and pickle files
+*.pickle
 *.pickl
 *bak*
+
+#trajectories 
+*.mdcrd
+*.inpcrd
+*.nc
+*.rst7
+*.rst
+
