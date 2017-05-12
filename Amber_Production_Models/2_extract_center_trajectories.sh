@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-rootdir=/Users/robert_arbon/Code/AADH/Analysis/Amber_Production_Models
+rootdir=. #/Users/robert_arbon/Code/AADH/Analysis/Amber_Production_Models
+
 topfile=2agy.prmtop
 mkdir -p proc_traj
 inpdir=raw_traj
@@ -11,10 +12,21 @@ do
     if [[ ${bn#*.} == "nc" ]]
     then
         fname=${bn%.*}
-        echo $traj
-        cpptraj -p $rootdir/$inpdir/$topfile -i site1.cpptraj -y $rootdir/$inpdir/$bn -x $rootdir/$outdir/$fname-as1.nc \
-        --log $outdir/as1.log
-        cpptraj -p $rootdir/$inpdir/$topfile -i site2.cpptraj -y $rootdir/$inpdir/$bn -x $rootdir/$outdir/$fname-as2.nc \
-        --log $outdir/as2.log
+
+        newfile=$rootdir/$outdir/$fname-as1.nc
+        if [[ ! -e $newfile ]]
+        then
+            echo 'Processing ' $traj 'saving as ' $newfile
+            cpptraj -p $rootdir/$inpdir/$topfile -i site1.cpptraj -y $rootdir/$inpdir/$bn -x $newfile \
+            --log $outdir/as1.log
+        fi
+
+        newfile=$rootdir/$outdir/$fname-as2.nc
+        if [[ ! -e $newfile ]]
+        then
+            echo 'Processing ' $traj 'saving as ' $newfile
+            cpptraj -p $rootdir/$inpdir/$topfile -i site2.cpptraj -y $rootdir/$inpdir/$bn -x $newfile \
+            --log $outdir/as2.log
+        fi
     fi
 done

@@ -2,7 +2,8 @@
 # Creates a directory of symlinks for trajectories and a prmtop file
 
 # Where the data is stored
-rootdir=/Volumes/dynamics_of_glassy_aerosols/AADH/Amber/round_1
+#rootdir=/Volumes/dynamics_of_glassy_aerosols/AADH/Amber/round_1
+rootdir=~/RDSF/Amber/round_1
 subdirs=({1..100}ns)
 
 oldtrajname=100ns-production.mdcrd
@@ -23,14 +24,18 @@ do
     if [ -e $trajfile ]
     then
         actualsize=$(wc -c  < $trajfile)
-
         if [ $actualsize -eq $trajsize ]
         then
-            ln -s $trajfile $newdir/$newtrajname-${dir%ns}.nc
+            newfile=$newdir/$newtrajname-${dir%ns}.nc
+            if [[ ! -h $newfile ]]
+            then
+              echo 'Creating link to ' $newfile
+              ln -s $trajfile $newfile
+            fi
         fi
     fi
 done
 
 # link prmtop
-ln -s $rootdir/$subdirs[0]/$newtopname $newdir/$newtopname
-
+#ln -s $rootdir/$subdirs[0]/$oldtopname $newdir/$newtopname
+ln -s /home/robert/Research/AADH/MD/common/$oldtopname $newdir/$newtopname
