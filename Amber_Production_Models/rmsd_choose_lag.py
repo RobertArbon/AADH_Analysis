@@ -8,13 +8,7 @@ from multiprocessing import Pool
 import numpy as np
 from msmbuilder.msm import MarkovStateModel
 import matplotlib.pyplot as plt
-    clusterer = LandmarkAgglomerative(n_clusters=n_clusters,
-                                      n_landmarks=n_clusters//10,
-                                      linkage='ward', metric='rmsd',
-                                      landmark_strategy='stride',
-                                      random_state=None, max_landmarks=None,
-                                      ward_predictor='ward')
-    ctrajs = clusterer.fit_transform(trajs)
+
 # Load data
 meta = load_meta()
 tops = preload_tops(meta)
