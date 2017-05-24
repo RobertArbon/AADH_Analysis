@@ -2,7 +2,7 @@
 from msmbuilder.io import load_trajs, save_generic, load_meta, preload_tops
 from msmbuilder.cluster import LandmarkAgglomerative
 from sklearn.pipeline import Pipeline
-# from sklearn.model_selection import GridSearchCV, ShuffleSplit
+from sklearn.model_selection import GridSearchCV, ShuffleSplit
 import mdtraj as md
 from multiprocessing import Pool
 import numpy as np
@@ -32,45 +32,48 @@ def traj_load(irow):
 
 if __name__ == '__main__':
 
+    # -------------------------------------------------------------------------
+    # Load data and set parameters
+    # -------------------------------------------------------------------------
     with Pool() as pool:
         trajs_dct = dict(pool.imap_unordered(traj_load, meta.iterrows()))
     trajs = [traj for traj in trajs_dct.values()]
 
     to_ns, t_max, frames_tot = get_timings(meta)
     n_clusters = int(np.sqrt(frames_tot))
-    print(n_clusters)
-    # n_clusters = int(frames_tot/1000)
+    msm_lag = int(25/to_ns) # from eyeballing rmsd_timescales(-detail).png
+
+    # -------------------------------------------------------------------------
+    # Set pipeline
+    # -------------------------------------------------------------------------
     clusterer = LandmarkAgglomerative(n_clusters=n_clusters,
                                       n_landmarks=n_clusters//10,
                                       linkage='ward', metric='rmsd',
                                       landmark_strategy='stride',
                                       random_state=None, max_landmarks=None,
                                       ward_predictor='ward')
-    ctrajs = clusterer.fit_transform(trajs)
+    msm = MarkovStateModel(lag_time=msm_lag)
+    pipe = Pipeline([('cluster', clusterer), ('msm', msm)])
 
-    lags = (np.arange(1,50,1)/to_ns).astype(int)
-    n_timescales=50
-    timescales = np.zeros((lags.shape[0], n_timescales))
-    eigenvalues = np.zeros((lags.shape[0], n_timescales))
+    # -------------------------------------------------------------------------
+    # Set param search object
+    # -------------------------------------------------------------------------
 
-    for idx, lag in enumerate(lags):
-        msm = MarkovStateModel(lag_time=lag, n_timescales=n_timescales)
-        msm.fit_transform(ctrajs)
-        timescales[idx] = msm.timescales_
-        eigenvalues[idx] = msm.eigenvalues_[1:]
+    params = {'cluster__n_clusters': list((np.logspace(-0.5, 2, 10)*n_clusters).astype(int))}
+    print(params)
+    cv_iter = ShuffleSplit(n_splits=10, test_size=0.5)
+    param_search = GridSearchCV(pipe, param_grid=params, cv=cv_iter)
+
+    # -------------------------------------------------------------------------
+    # Search param space and save
+    # -------------------------------------------------------------------------
+
+    param_search.fit(trajs)
+    save_generic(param_search, 'models/rmsd_model.pickl')
+
+    print('Best score of {0} was achieved with \n {1}'.format(
+        param_search.best_score_, param_search.best_params_))
 
 
-
-    for idx in range(n_timescales):
-        plt.plot(lags*to_ns, timescales.T[idx])
-    plt.savefig('figures/rmsd_timescales.png')
-    plt.ylim((0,int(np.max(timescales.T[1]))))
-    plt.savefig('figures/rmsd_timescales-detail.png')
-    plt.clf()
-
-    for idx in range(n_timescales):
-        plt.plot(lags*to_ns, eigenvalues.T[idx])
-    plt.savefig('figures/rmsd_eigenvalues.png')
-    # Make Pipeline
 
 

@@ -25,3 +25,5 @@ parser = GenericParser(re_pattern,
 meta = gather_metadata(join('proc_traj', "*.{}".format(file_type)), parser)
 print(meta.head())
 save_meta(meta)
+
+from msmbuilder.feature_extraction import FunctionFeaturizer
