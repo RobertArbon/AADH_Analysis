@@ -15,6 +15,8 @@ from pyemma.coordinates import featurizer, source
 sns.set_style('ticks')
 colors = sns.color_palette('colorblind')
 
+
+masses = np.array([atom.element.mass for atom in topology.atoms])
 ## Box and whisker plot
 # def plot_box(ax, fxx, feature_name='Feature'):
 #     n_feats_plot = min(fxx.shape[1], 100)
