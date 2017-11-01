@@ -8,7 +8,7 @@ estimator:
         Pipeline([
                 ('tica', tICA(kinetic_mapping=True)),
                 ('cluster', MiniBatchKMeans()),
-                ('msm', MarkovStateModel(n_timescales=1, verbose=True)),
+                ('msm', MarkovStateModel(lag_time=500, n_timescales=1, verbose=True)),
         ])
 
     # for eval, a python package containing the estimator definitions
@@ -42,12 +42,11 @@ cv:
   params:
     n_splits: 5
     test_size: 0.5
-    random_state: 42
 
 dataset_loader:
   name: numpy
   params:
-    filenames: '../Data/proc_traj/high_var_dihedrals/*as1-dihedrals-dt-0.1ns.npy'
+    filenames: '/mnt/storage/home/ra15808/scratch/AADH/active_site_only/high_var_dihedrals/*as1-dihedrals-dt-0.1ns.npy' 
 
 trials:
   uri: sqlite:///osprey-trials.db
