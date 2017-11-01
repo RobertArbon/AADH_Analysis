@@ -8,7 +8,7 @@ estimator:
         Pipeline([
                 ('tica', tICA(kinetic_mapping=True)),
                 ('cluster', MiniBatchKMeans()),
-                ('msm', MarkovStateModel(n_timescales=1, verbose=False)),
+                ('msm', MarkovStateModel(n_timescales=1, verbose=True)),
         ])
 
     # for eval, a python package containing the estimator definitions
@@ -30,11 +30,17 @@ search_space:
     min: 50
     max: 700
     type: int
+    warp: log
+
+  tica__n_components:
+    min: 1
+    max: 10
+    type: int
 
 cv:
   name: shufflesplit
   params:
-    n_iter: 5
+    n_splits: 5
     test_size: 0.5
     random_state: 42
 

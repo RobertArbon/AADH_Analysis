@@ -111,4 +111,4 @@ ENV/
 *.nc
 *.rst7
 *.rst
-
+*.db
