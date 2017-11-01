@@ -1,0 +1,48 @@
+# osprey configuration file.
+#---------------------------
+# usage:
+#  osprey worker config.yaml
+
+estimator:
+    eval: |
+        Pipeline([
+                ('tica', tICA(kinetic_mapping=True)),
+                ('cluster', MiniBatchKMeans()),
+                ('msm', MarkovStateModel(n_timescales=1, verbose=False)),
+        ])
+
+    # for eval, a python package containing the estimator definitions
+    eval_scope: msmbuilder
+
+
+strategy:
+        name: random  # or gp, hyperopt_tpe
+        # params: {}
+
+search_space:
+  cluster__n_clusters:
+    min: 50
+    max: 1000
+    type: int       # from 10 to 100 (with inclusive endpoints)
+
+  tica__lag_time:
+    # dt = 0.1 ns. Trajectory is 100ns long
+    min: 50
+    max: 700
+    type: int
+
+cv:
+  name: shufflesplit
+  params:
+    n_iter: 5
+    test_size: 0.5
+    random_state: 42
+
+dataset_loader:
+  name: numpy
+  params:
+    filenames: '../Data/proc_traj/high_var_dihedrals/*as1-dihedrals-dt-0.1ns.npy'
+
+trials:
+  uri: sqlite:///osprey-trials.db
+  project_name: high_var_dihed_as1
